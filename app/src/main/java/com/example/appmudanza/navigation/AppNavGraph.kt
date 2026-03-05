@@ -35,16 +35,13 @@ NavHost (
 ) {
 composable (Route.Login.Path) {
     //ahora mostramos los botones que queremos que aparezcan y sus acciones
-    LoginScreen (
-        onLogin = {
-            //simulacion de login OK
-            // Navegacion a pantalla HOME
+    LoginScreen(
+        onLoginSuccess = {
             navController.navigate(Route.Home.Path) {
-                popUpTo(Route.Login.Path) { inclusive = true} //evitamos que la pagina pete al ir hacia atras.
+                popUpTo(Route.Login.Path) { inclusive = true }
             }
         },
         onGoToRegister = {
-            //Navegacion a pantalla REGISTER
             navController.navigate(Route.Register.Path)
         }
     )

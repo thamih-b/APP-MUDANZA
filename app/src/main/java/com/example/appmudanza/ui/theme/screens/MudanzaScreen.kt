@@ -78,33 +78,35 @@ fun RatingStars (rating: Float) {
     }
 }
 
-fun MudanzaScreen (
-    conductores: List <Conductores>,
-    navController: NavHostController,
-    onback: () -> Unit
-){
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {Text("ALQUILER DE CONDUCTOR")},
-                navigationIcon = {
-                    IconButton(onClick = onback) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null)
-                    }
-                }
-            )
-        }
-    ) {paddingValues->
-        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            itemsIndexed(conductores) {index, conductor ->
-                ConductorCard (
-                    title = conductor.title,
-                    description = conductor.description,
-                    imagesRes = conductor.imagesRes,
-                    valoration = conductor.valoration,
-                    onClick =
-                )
-            }
-        }
-    }
-}
+/*COMENTADO PQ ESTÁ INCOMPLETO TODAVIA Y HACE LA APP NO FUNCIONAR*/
+//@Composable
+//fun MudanzaScreen (
+//    conductores: List <Conductores>,
+//    navController: NavHostController,
+//    onback: () -> Unit
+//){
+//    Scaffold(
+//        topBar = {
+//            TopAppBar(
+//                title = {Text("ALQUILER DE CONDUCTOR")},
+//                navigationIcon = {
+//                    IconButton(onClick = onback) {
+//                        Icon(Icons.Default.ArrowBack, contentDescription = null)
+//                    }
+//                }
+//            )
+//        }
+//    ) {paddingValues->
+//        LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+//            itemsIndexed(conductores) {index, conductor ->
+//                ConductorCard (
+//                    title = conductor.title,
+//                    description = conductor.description,
+//                    imagesRes = conductor.imagesRes,
+//                    valoration = conductor.valoration,
+//                    onClick =
+//                )
+//            }
+//        }
+//    }
+//}
