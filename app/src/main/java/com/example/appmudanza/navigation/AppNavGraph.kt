@@ -6,19 +6,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.appmudanza.ui.theme.screens.AlquilerScreen
 import com.example.appmudanza.ui.theme.screens.HomeScreen
 import com.example.appmudanza.ui.theme.screens.LoginScreen
 import com.example.appmudanza.ui.theme.screens.MudanzaScreen
 import com.example.appmudanza.ui.theme.screens.RegisterScreen
-
-
+import com.example.appmudanza.ui.theme.screens.VehicleRegistrationScreen
 
 // SEALED CLASS: rutas tipadas
-sealed class Route(val Path: String) {
+sealed class Route(val path: String) {
     object Login : Route("login")
     object Register : Route("register")
     object Home : Route("home")
     object Mudanza : Route("mudanza")
+    object VehicleRegistration : Route("vehicle_registration")
     object Alquiler : Route("alquiler")
     object Incidencias : Route("incidencias")
     object Settings : Route("settings")
@@ -28,66 +29,88 @@ sealed class Route(val Path: String) {
 fun AppNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
+
     NavHost(
         navController = navController,
-        startDestination = Route.Login.Path
+        startDestination = Route.Login.path
     ) {
-        composable(Route.Login.Path) {
+
+        composable(Route.Login.path) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Route.Home.Path) {
-                        popUpTo(Route.Login.Path) { inclusive = true }
+                    navController.navigate(Route.Home.path) {
+                        popUpTo(Route.Login.path) { inclusive = true }
                     }
                 },
                 onGoToRegister = {
-                    navController.navigate(Route.Register.Path)
+                    navController.navigate(Route.Register.path)
                 }
             )
         }
 
-        composable(Route.Register.Path) {
+        composable(Route.Register.path) {
             RegisterScreen(
                 onRegister = {
-                    navController.navigate(Route.Home.Path) {
-                        popUpTo(Route.Login.Path) { inclusive = true }
+                    navController.navigate(Route.Home.path) {
+                        popUpTo(Route.Login.path) { inclusive = true }
                     }
                 },
                 onBackToLogin = {
-                    navController.popBackStack()  // Simples volta
+                    navController.popBackStack()
                 }
             )
         }
 
-        composable(Route.Home.Path) {
+        composable(Route.Home.path) {
             HomeScreen(
+                navController = navController,
                 onGoToMudanza = {
-                    navController.navigate(Route.Mudanza.Path)
+                    navController.navigate(Route.Mudanza.path)
+                },
+                onGoToVehicleRegistration = {
+                    navController.navigate(Route.VehicleRegistration.path)
                 },
                 onGoToAlquiler = {
-                    navController.navigate(Route.Alquiler.Path)
+                    navController.navigate(Route.Alquiler.path)
                 },
                 onGoToIncidencias = {
-                    navController.navigate(Route.Incidencias.Path)
+                    navController.navigate(Route.Incidencias.path)
                 },
                 onGoToSettings = {
-                    navController.navigate(Route.Settings.Path)
+                    navController.navigate(Route.Settings.path)
                 }
             )
         }
 
-        // Rotas vazias por enquanto (adicionamos depois)
-        composable(Route.Mudanza.Path) {
-            MudanzaScreen(
-                onBack = { navController.popBackStack() }
+        composable(Route.VehicleRegistration.path) {
+            VehicleRegistrationScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
-        composable(Route.Alquiler.Path) {
-            Text("ALQUILER SCREEN - EM DESENVOLVIMENTO")
+
+        composable(Route.Mudanza.path) {
+            MudanzaScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
-        composable(Route.Incidencias.Path) {
+
+        composable(Route.Alquiler.path) {
+            AlquilerScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Route.Incidencias.path) {
             Text("INCIDENCIAS SCREEN")
         }
-        composable(Route.Settings.Path) {
+
+        composable(Route.Settings.path) {
             Text("AJUSTES SCREEN")
         }
     }

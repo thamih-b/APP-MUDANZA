@@ -8,5 +8,10 @@ data class User(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val email: String,
-    val password: String
+    val password: String,
+    val licenciaCategoria: String? = null // A, B, C para verificación
+    // // Categoria de licencia: A=motos, B=coches ligeros, C=pesados
 )
+
+
+

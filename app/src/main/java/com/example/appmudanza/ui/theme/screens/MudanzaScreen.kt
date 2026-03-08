@@ -1,147 +1,197 @@
 package com.example.appmudanza.ui.theme.screens
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.appmudanza.data.entity.MudanzaVehicle
-import com.example.appmudanza.ui.theme.screens.MudanzaViewModel
-
+import com.example.appmudanza.ui.viewmodel.MoveViewModel
+import com.example.appmudanza.viewmodel.VehicleViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MudanzaScreen(
     onBack: () -> Unit,
-    viewModel: MudanzaViewModel = viewModel()
+    vehicleViewModel: VehicleViewModel = viewModel(),
+    moveViewModel: MoveViewModel = viewModel()
 ) {
-    val vehicles by viewModel.vehicles.collectAsState()  // ← SEM LaunchedEffect!
+    val vehicles by vehicleViewModel.vehicles.collectAsState()
+    val moves by moveViewModel.moves.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Camiones + Conductor") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Volver")
+    var origin by remember { mutableStateOf("") }
+    var destination by remember { mutableStateOf("") }
+    var client by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var selectedVehicleId by remember { mutableStateOf<Int?>(null) }
+    var filterCapacity by remember { mutableStateOf("") }
+
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabTitles = listOf("Crear Mudanza", "Filtrar Vehículos", "Mudanzas Registradas")
+
+    Scaffold(topBar = { TopAppBar(title = { Text("Gestión de Mudanzas") }) }) { padding ->
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            TabRow(selectedTabIndex = selectedTab) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(selected = selectedTab == index, onClick = { selectedTab = index }, text = { Text(title) })
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            when (selectedTab) {
+                0 -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        // SELEÇÃO DE VEÍCULO
+                        Text("Selecciona Vehículo", style = MaterialTheme.typography.titleMedium)
+                        val vehiclesWithDriver = vehicles.filter { it.withDriver }
+
+                        LazyColumn(
+                            modifier = Modifier.height(200.dp), // Altura fixa para veículos
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(vehiclesWithDriver) { vehicle ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { selectedVehicleId = vehicle.id }
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text("Placa: ${vehicle.plate}")
+                                        Text("Tipo: ${vehicle.type}")
+                                        Text("Capacidad: ${vehicle.capacity}")
+                                        Text("Conductor: ${vehicle.driver}")
+                                        Text("Carnet: ${vehicle.licenseType}")
+                                        if (selectedVehicleId == vehicle.id) Text("✔ Seleccionado")
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+
+                        // FORMULÁRIO
+                        Text("Datos de la Mudanza", style = MaterialTheme.typography.titleMedium)
+                        OutlinedTextField(value = origin, onValueChange = { origin = it }, label = { Text("Origen") })
+                        OutlinedTextField(value = destination, onValueChange = { destination = it }, label = { Text("Destino") })
+                        OutlinedTextField(value = client, onValueChange = { client = it }, label = { Text("Cliente") })
+                        OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Fecha") })
+
+                        Button(
+                            onClick = {
+                                selectedVehicleId?.let { vehicleId ->
+                                    moveViewModel.addMove(origin, destination, date, client, vehicleId)
+                                    origin = ""; destination = ""; client = ""; date = ""
+                                }
+                            },
+                            enabled = selectedVehicleId != null,
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("Crear Mudanza") }
+
+                        if (selectedVehicleId == null) {
+                            Text("Seleccione un vehículo primero", color = MaterialTheme.colorScheme.error)
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+
+                        // LISTA DE MUDANZAS (ROLAMENTO VERTICAL)
+                        Text("Mudanzas Registradas", style = MaterialTheme.typography.titleMedium)
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(moves) { move ->
+                                Card(modifier = Modifier.fillMaxWidth()) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Text("Cliente: ${move.client}")
+                                        Text("Origen: ${move.origin}")
+                                        Text("Destino: ${move.destination}")
+                                        Text("Fecha: ${move.date}")
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Volver") }
                     }
                 }
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (vehicles.isEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+
+                1 -> {
+                    val filteredVehicles = vehicles
+                        .filter { it.withDriver }
+                        .filter { vehicle -> vehicle.capacity >= (filterCapacity.toIntOrNull() ?: 0) }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item {
+                            Text("Filtrar Vehículos por Capacidad", style = MaterialTheme.typography.titleMedium)
+                            OutlinedTextField(
+                                value = filterCapacity,
+                                onValueChange = { filterCapacity = it },
+                                label = { Text("Cantidad a transportar") }
+                            )
+                        }
+
+                        items(filteredVehicles) { vehicle ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { selectedVehicleId = vehicle.id }
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text("Placa: ${vehicle.plate}")
+                                    Text("Tipo: ${vehicle.type}")
+                                    Text("Capacidad: ${vehicle.capacity}")
+                                    Text("Conductor: ${vehicle.driver}")
+                                    if (selectedVehicleId == vehicle.id) {
+                                        Text("✔ Seleccionado")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-            } else {
-                items(vehicles) { vehicle ->
-                    MudanzaCard(vehicle)
+
+                2 -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item {
+                            Text("Mudanzas Registradas", style = MaterialTheme.typography.titleMedium)
+                        }
+
+                        items(moves) { move ->
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text("Cliente: ${move.client}")
+                                    Text("Origen: ${move.origin}")
+                                    Text("Destino: ${move.destination}")
+                                    Text("Fecha: ${move.date}")
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MudanzaCard(vehicle: MudanzaVehicle) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Imagem
-            Card(
-                modifier = Modifier.size(90.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = vehicle.imageRes),
-                    contentDescription = vehicle.title,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Info
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = vehicle.title,
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = vehicle.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${vehicle.pricePerHour}€/hora",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    RatingStars(vehicle.rating)
-                }
-                Text(
-                    text = vehicle.maxLoad,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MudanzaRatingStars(rating: Float) {  // ← Renomeado
-    Row {
-        repeat(5) { index ->
-            Icon(
-                imageVector = if (index < rating.toInt()) Icons.Default.Star else Icons.Default.Star,
-                contentDescription = null,
-                tint = if (index < rating) Color(0xFFFFD700) else Color.LightGray,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = rating.toString(),
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
-}
-

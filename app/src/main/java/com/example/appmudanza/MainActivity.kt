@@ -11,9 +11,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // popular dados iniciais (veículos)
-        InitialData.populateIfEmpty(this)
-
         setContent {
             APPMUDANZATheme {
                 AppNavGraph()

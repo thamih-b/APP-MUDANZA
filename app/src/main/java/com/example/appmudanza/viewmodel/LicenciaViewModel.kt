@@ -1,4 +1,4 @@
-package com.example.appmudanza.ui.theme.screens
+package com.example.appmudanza.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -7,18 +7,33 @@ import com.example.appmudanza.data.database.DatabaseProvider
 import com.example.appmudanza.data.entity.MudanzaVehicle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MudanzaViewModel(application: Application) : AndroidViewModel(application) {
-    private val _vehicles = MutableStateFlow<List<MudanzaVehicle>>(emptyList())
-    val vehicles: StateFlow<List<MudanzaVehicle>> = _vehicles.asStateFlow()
+class LicenciaViewModel(app: Application) : AndroidViewModel(app) {
 
-    fun loadMudanzas() {  // Solo vehículos con conductor
+    // Lista observable de vehículos
+    private val _vehicles = MutableStateFlow<List<MudanzaVehicle>>(emptyList())
+    val vehicles: StateFlow<List<MudanzaVehicle>> = _vehicles
+
+    fun loadMudanzas() {
+
         viewModelScope.launch {
+
+            // Obtener instancia de la base de datos
             val db = DatabaseProvider.getDatabase(getApplication())
-            val list = db.mudanzaVehicleDao().getAll()
+
+            // Obtener DAO
+            val dao = db.mudanzaVehicleDao()
+
+            // Obtener lista de camiones
+            val list = dao.getAll()
+
+            // Actualizar estado
             _vehicles.value = list
         }
     }
 }
+
+
+// StateFlow se usa para que la UI observe cambios
+// Cuando vehicles cambia, Compose actualiza la pantalla

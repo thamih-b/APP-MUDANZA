@@ -1,4 +1,4 @@
-package com.example.appmudanza.ui.theme.screens
+package com.example.appmudanza.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
